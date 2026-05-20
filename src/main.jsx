@@ -199,7 +199,7 @@ function App() {
         {
           role: "ai",
           text:
-            "（连接失败）当前环境还没连上真实 AI。部署到 Vercel 并配置 OPENAI_API_KEY 后就会变成真实对话。",
+            "（连接失败）当前环境还没连上真实 AI。部署到 Vercel 并配置 GROQ_API_KEY 后就会变成真实对话。",
         },
       ]);
       console.error(e);

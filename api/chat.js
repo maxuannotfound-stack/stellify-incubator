@@ -12,15 +12,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+    // Switch to Groq (OpenAI-compatible endpoint)
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return res.status(500).json({
         error:
-          "Missing OPENAI_API_KEY. Please set it in Vercel Project Settings → Environment Variables.",
+          "Missing GROQ_API_KEY. Please set it in Vercel Project Settings → Environment Variables.",
       });
     }
 
-    const client = new OpenAI({ apiKey });
+    const client = new OpenAI({
+      apiKey,
+      baseURL: "https://api.groq.com/openai/v1",
+    });
 
     const { messages, tier } = req.body ?? {};
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -28,12 +32,12 @@ export default async function handler(req, res) {
     }
 
     // Later you can use tier to unlock higher models/features.
-    const model = "gpt-4o-mini";
+    const model = tier === "pro" ? "llama-3.1-70b-versatile" : "llama-3.1-8b-instant";
 
     const system = {
       role: "system",
       content:
-        "You are Stellify AI Finance Assistant. Provide clear, practical, education-only guidance for Australian SMEs. Do NOT provide financial or investment advice. When uncertain, ask clarifying questions. Keep responses concise and structured.",
+        "You are Stellify AI Finance Assistant. Provide clear, practical, education-only guidance for Australian SMEs. Do NOT provide financial or investment advice. When uncertain, ask clarifying questions. Keep responses concise and structured. Reply in the same language as the user.",
     };
 
     const completion = await client.chat.completions.create({
@@ -53,4 +57,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
