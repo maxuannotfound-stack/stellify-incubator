@@ -20,8 +20,13 @@ const navy = "#052447";
 const gold = "#b08646";
 
 function Button({ children, className = "", variant = "primary", ...props }) {
+  const { type, ...rest } = props;
   return (
-    <button className={`btn btn-${variant} ${className}`} {...props}>
+    <button
+      type={type ?? "button"}
+      className={`btn btn-${variant} ${className}`}
+      {...rest}
+    >
       {children}
     </button>
   );
@@ -45,22 +50,50 @@ function StellifyLogo({ footer = false }) {
 
 function App() {
   const [level, setLevel] = useState("Starter");
+  const [activeCourse, setActiveCourse] = useState("Starter");
+
+  const [readiness, setReadiness] = useState({
+    businessName: "",
+    industry: "",
+    monthlyRevenue: "",
+    monthlyExpenses: "",
+    existingDebt: "No",
+    fundingPurpose: "",
+    fundingAmount: "",
+  });
+
+  const [chatMessages, setChatMessages] = useState([
+    { role: "user", text: "I am not sure whether business lending is too risky for my company." },
+    {
+      role: "ai",
+      text: "Lending always involves risk. A good first step is to check your income stability, repayment ability and purpose of funding. Would you like to complete a readiness check?",
+    },
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatStatus, setChatStatus] = useState("idle"); // idle | sending | error
+  const [chatError, setChatError] = useState("");
 
   const levels = {
     Starter: {
       title: "Starter: Understand Finance",
       desc: "Learn basic business lending, borrowing responsibility, common finance terms, and risk concepts in plain language.",
       modules: ["What is business lending?", "Debt vs investment", "Basic risk awareness"],
+      mentor: { name: "Mentor: Emma", role: "Small Business Coach" },
+      priceAUD: 0,
     },
     Growth: {
       title: "Growth: Prepare for Lending",
       desc: "Build readiness by understanding income, cash flow, repayment ability, and lender expectations.",
       modules: ["Finance readiness checklist", "Cash flow and repayment", "Documents lenders may request"],
+      mentor: { name: "Mentor: Daniel", role: "Finance Readiness Specialist" },
+      priceAUD: 149,
     },
     Expansion: {
       title: "Expansion: Use Finance Strategically",
       desc: "Explore how finance can support business expansion while keeping risk and long-term sustainability in mind.",
       modules: ["Strategic borrowing", "Growth planning", "Risk and decision-making"],
+      mentor: { name: "Mentor: Priya", role: "Growth & Strategy Advisor" },
+      priceAUD: 299,
     },
   };
 
@@ -88,6 +121,91 @@ function App() {
     ["20", "Years of financial experience"],
   ];
 
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const setCourseAndScroll = (courseKey) => {
+    setLevel(courseKey);
+    setActiveCourse(courseKey);
+    scrollTo("learning");
+  };
+
+  const updateReadiness = (field, value) => {
+    setReadiness((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const computeReadiness = () => {
+    const revenue = Number(readiness.monthlyRevenue || 0);
+    const expenses = Number(readiness.monthlyExpenses || 0);
+    const amount = Number(readiness.fundingAmount || 0);
+    const margin = revenue - expenses;
+
+    let score = 0;
+    if (revenue > 0) score += 20;
+    if (margin > 0) score += 20;
+    if (margin > revenue * 0.15) score += 15;
+    if (readiness.existingDebt === "No") score += 15;
+    if (readiness.fundingPurpose.trim().length >= 8) score += 15;
+    if (amount > 0 && margin > 0 && amount <= margin * 12) score += 15;
+    return Math.min(100, score);
+  };
+
+  const readinessScore = computeReadiness();
+
+  const sendChat = async () => {
+    const text = chatInput.trim();
+    if (!text) return;
+    setChatInput("");
+    setChatMessages((prev) => [...prev, { role: "user", text }]);
+    setChatStatus("sending");
+    setChatError("");
+
+    try {
+      const messagesForApi = [
+        ...chatMessages.map((m) => ({
+          role: m.role === "ai" ? "assistant" : "user",
+          content: m.text,
+        })),
+        { role: "user", content: text },
+      ];
+
+      const resp = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: messagesForApi,
+          tier: "free",
+        }),
+      });
+
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        throw new Error(data?.error || `Request failed (${resp.status})`);
+      }
+
+      const reply = data?.text || "(No response)";
+      setChatMessages((prev) => [...prev, { role: "ai", text: reply }]);
+      setChatStatus("idle");
+    } catch (e) {
+      setChatStatus("error");
+      setChatError(
+        "AI is not connected yet. If you are running locally, /api/chat only works after deploying to Vercel (or using Vercel Dev)."
+      );
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          text:
+            "（连接失败）当前环境还没连上真实 AI。部署到 Vercel 并配置 OPENAI_API_KEY 后就会变成真实对话。",
+        },
+      ]);
+      console.error(e);
+    }
+  };
+
   return (
     <div className="site">
       <header className="header">
@@ -103,7 +221,7 @@ function App() {
             <a href="#contact">FAQs</a>
             <a href="#contact">Contact</a>
           </nav>
-          <Button>Book Your Free Session</Button>
+          <Button onClick={() => scrollTo("contact")}>Book Your Free Session</Button>
         </div>
       </header>
 
@@ -123,8 +241,12 @@ function App() {
               A structured learning and support platform for SMEs and new business clients. Build financial confidence, strengthen your business, and access the right funding to grow.
             </p>
             <div className="hero-actions">
-              <Button variant="gold">Start Your Learning Journey</Button>
-              <Button variant="outline">Check Your Finance Readiness</Button>
+              <Button variant="gold" onClick={() => scrollTo("learning")}>
+                Start Your Learning Journey
+              </Button>
+              <Button variant="outline" onClick={() => scrollTo("readiness")}>
+                Check Your Finance Readiness
+              </Button>
             </div>
           </motion.div>
         </div>
@@ -160,7 +282,19 @@ function App() {
                   <h3>{title}</h3>
                   <p>{desc}</p>
                 </div>
-                <Button>Discover More</Button>
+                <Button
+                  onClick={() => {
+                    if (title === "Finance Readiness Check") return scrollTo("readiness");
+                    if (title === "Business Finance Learning") return scrollTo("learning");
+                    if (title === "AI Guided Q&A") return scrollTo("assistant");
+                    if (title === "Risk & Responsibility") return setCourseAndScroll("Starter");
+                    if (title === "Expert Referral Support") return scrollTo("network");
+                    if (title === "Growth Funding Pathway") return setCourseAndScroll("Expansion");
+                    return scrollTo("learning");
+                  }}
+                >
+                  Discover More
+                </Button>
               </Card>
             ))}
           </div>
@@ -180,7 +314,7 @@ function App() {
               <li><b>Explore business lending options:</b> learn how funding can support cash flow, assets and business growth.</li>
               <li><b>Support your ongoing journey:</b> plan strategically, understand risk and prepare for personalised advice.</li>
             </ul>
-            <Button>Explore Services</Button>
+            <Button onClick={() => scrollTo("resources")}>Explore Services</Button>
           </div>
           <div className="illustration-card">
             <div className="illustration-circle">
@@ -219,9 +353,48 @@ function App() {
             <p>
               The incubator uses simple learning levels so clients can understand finance before making decisions. This supports trust, financial literacy and better client readiness.
             </p>
+            <div className="course-grid">
+              {Object.keys(levels).map((key) => (
+                <Card
+                  key={key}
+                  className={`course-card ${activeCourse === key ? "active" : ""}`}
+                >
+                  <div className="course-mentor">
+                    <div className={`mentor-avatar mentor-${key.toLowerCase()}`} />
+                    <div>
+                      <div className="mentor-name">{levels[key].mentor.name}</div>
+                      <div className="mentor-role">{levels[key].mentor.role}</div>
+                    </div>
+                  </div>
+                  <div className="course-title">{key}</div>
+                  <div className="course-price">
+                    {levels[key].priceAUD === 0 ? "Free" : `AUD $${levels[key].priceAUD}`}
+                  </div>
+                  <Button
+                    variant={activeCourse === key ? "primary" : "light"}
+                    className="course-cta"
+                    onClick={() => {
+                      setActiveCourse(key);
+                      setLevel(key);
+                    }}
+                  >
+                    View modules
+                  </Button>
+                </Card>
+              ))}
+            </div>
             <div className="level-buttons">
               {Object.keys(levels).map((item) => (
-                <Button key={item} onClick={() => setLevel(item)} variant={item === level ? "primary" : "light"}>{item}</Button>
+                <Button
+                  key={item}
+                  onClick={() => {
+                    setLevel(item);
+                    setActiveCourse(item);
+                  }}
+                  variant={item === level ? "primary" : "light"}
+                >
+                  {item}
+                </Button>
               ))}
             </div>
           </div>
@@ -240,17 +413,155 @@ function App() {
         </div>
       </section>
 
+      <section id="readiness" className="section readiness-section">
+        <div className="container two-col center-items">
+          <div>
+            <p className="eyebrow">Finance Readiness Check</p>
+            <h2>Get a quick snapshot before seeking funding</h2>
+            <p>
+              This is a demo checklist to guide a conversation. It is not financial advice. Enter approximate figures in AUD.
+            </p>
+            <div className="readiness-score">
+              <div className="score-number">{readinessScore}/100</div>
+              <div className="score-label">
+                {readinessScore >= 70
+                  ? "Good starting point"
+                  : readinessScore >= 45
+                    ? "Needs a bit more clarity"
+                    : "Early stage — start with basics"}
+              </div>
+            </div>
+            <div className="readiness-tips">
+              <p>
+                Next steps: clarify funding purpose, confirm monthly cash flow, and prepare basic documents (bank statements, BAS, financials).
+              </p>
+              <Button onClick={() => scrollTo("assistant")}>Ask the AI Assistant</Button>
+            </div>
+          </div>
+          <Card className="readiness-card">
+            <h3>Quick inputs (AUD)</h3>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+              }}
+              className="readiness-form"
+            >
+              <label>
+                Business name
+                <input
+                  value={readiness.businessName}
+                  onChange={(e) => updateReadiness("businessName", e.target.value)}
+                  placeholder="e.g. Ocean Coffee Co."
+                />
+              </label>
+              <label>
+                Industry
+                <input
+                  value={readiness.industry}
+                  onChange={(e) => updateReadiness("industry", e.target.value)}
+                  placeholder="e.g. Retail / Trades / Hospitality"
+                />
+              </label>
+              <div className="readiness-row">
+                <label>
+                  Monthly revenue (AUD)
+                  <input
+                    inputMode="numeric"
+                    value={readiness.monthlyRevenue}
+                    onChange={(e) => updateReadiness("monthlyRevenue", e.target.value)}
+                    placeholder="e.g. 25000"
+                  />
+                </label>
+                <label>
+                  Monthly expenses (AUD)
+                  <input
+                    inputMode="numeric"
+                    value={readiness.monthlyExpenses}
+                    onChange={(e) => updateReadiness("monthlyExpenses", e.target.value)}
+                    placeholder="e.g. 18000"
+                  />
+                </label>
+              </div>
+              <label>
+                Existing business debt?
+                <select
+                  value={readiness.existingDebt}
+                  onChange={(e) => updateReadiness("existingDebt", e.target.value)}
+                >
+                  <option>No</option>
+                  <option>Yes</option>
+                </select>
+              </label>
+              <label>
+                Funding purpose
+                <input
+                  value={readiness.fundingPurpose}
+                  onChange={(e) => updateReadiness("fundingPurpose", e.target.value)}
+                  placeholder="e.g. equipment purchase, working capital..."
+                />
+              </label>
+              <label>
+                Desired amount (AUD)
+                <input
+                  inputMode="numeric"
+                  value={readiness.fundingAmount}
+                  onChange={(e) => updateReadiness("fundingAmount", e.target.value)}
+                  placeholder="e.g. 60000"
+                />
+              </label>
+              <Button variant="gold" onClick={() => scrollTo("assistant")}>
+                Discuss with AI
+              </Button>
+            </form>
+          </Card>
+        </div>
+      </section>
+
       <section id="assistant" className="section assistant-section">
         <div className="container two-col center-items">
           <Card className="chat-card">
             <div className="chat-header"><Bot /> Stellify AI Finance Assistant</div>
             <div className="chat-body">
-              <div className="chat-bubble user">I am not sure whether business lending is too risky for my company.</div>
-              <div className="chat-bubble ai">Lending always involves risk. A good first step is to check your income stability, repayment ability and purpose of funding. Would you like to complete a readiness check?</div>
-              <div className="chat-actions">
-                <Button variant="light">Start Readiness Check</Button>
-                <Button>Ask Another Question</Button>
+              <div className="chat-stream">
+                {chatMessages.map((m, idx) => (
+                  <div key={idx} className={`chat-bubble ${m.role}`}>
+                    {m.text}
+                  </div>
+                ))}
               </div>
+              <div className="chat-actions">
+                <Button variant="light" onClick={() => scrollTo("readiness")}>
+                  Start Readiness Check
+                </Button>
+                <Button
+                  onClick={() => {
+                    const input = document.getElementById("chat-input");
+                    input?.focus();
+                  }}
+                >
+                  Ask Another Question
+                </Button>
+              </div>
+              <form
+                className="chat-input-row"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  sendChat();
+                }}
+              >
+                <input
+                  id="chat-input"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Type a question (demo mode)…"
+                />
+                <Button type="submit" disabled={chatStatus === "sending"}>
+                  {chatStatus === "sending" ? "Sending..." : "Send"}
+                </Button>
+              </form>
+              {chatStatus === "error" && chatError ? (
+                <div className="chat-error">{chatError}</div>
+              ) : null}
             </div>
           </Card>
           <div>
@@ -318,7 +629,9 @@ function App() {
           <p>
             Start with a simple learning pathway, check your finance readiness, and connect with Stellify when you are ready for personalised support.
           </p>
-          <Button>Begin the Incubator Journey <ArrowRight size={18} /></Button>
+          <Button onClick={() => scrollTo("learning")}>
+            Begin the Incubator Journey <ArrowRight size={18} />
+          </Button>
         </div>
       </section>
 

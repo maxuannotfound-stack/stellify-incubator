@@ -102,6 +102,40 @@ button { font-family: inherit; }
 .module-item { display: flex; align-items: center; gap: 12px; background: #f8fafc; border-radius: 14px; padding: 16px; font-weight: 800; }
 .module-item svg { color: var(--gold); }
 
+.course-grid { margin-top: 26px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.course-card { padding: 18px; border-radius: 16px; text-align: left; border: 1px solid #e2e8f0; background: white; }
+.course-card.active { border-color: rgba(176,134,70,.7); box-shadow: 0 8px 18px rgba(15,23,42,.08); }
+.course-mentor { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+.mentor-avatar { height: 46px; width: 46px; border-radius: 50%; background: #e2e8f0 center/cover; flex-shrink: 0; border: 2px solid rgba(176,134,70,.35); }
+.mentor-starter { background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop'); }
+.mentor-growth { background-image: url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop'); }
+.mentor-expansion { background-image: url('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=300&auto=format&fit=crop'); }
+.mentor-name { font-weight: 900; color: var(--navy); font-size: 14px; }
+.mentor-role { font-size: 12px; color: #64748b; margin-top: 2px; }
+.course-title { font-size: 18px; font-weight: 900; color: var(--navy); margin-top: 2px; }
+.course-price { margin-top: 8px; font-size: 14px; font-weight: 900; color: var(--gold); }
+.course-cta { margin-top: 14px; width: 100%; }
+
+.readiness-section { background: white; }
+.readiness-score { margin-top: 18px; display: flex; align-items: baseline; gap: 14px; }
+.score-number { font-size: 48px; font-weight: 900; color: var(--gold); letter-spacing: -1px; }
+.score-label { font-size: 16px; font-weight: 900; color: var(--navy); }
+.readiness-tips { margin-top: 18px; max-width: 520px; }
+.readiness-tips p { margin: 0 0 14px; color: #64748b; line-height: 1.7; }
+.readiness-card { padding: 28px; }
+.readiness-card h3 { margin: 0 0 16px; font-size: 22px; font-weight: 900; }
+.readiness-form { display: flex; flex-direction: column; gap: 14px; }
+.readiness-form label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 900; color: var(--navy); }
+.readiness-form input, .readiness-form select {
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 15px;
+  outline: none;
+}
+.readiness-form input:focus, .readiness-form select:focus { border-color: rgba(176,134,70,.7); box-shadow: 0 0 0 3px rgba(176,134,70,.15); }
+.readiness-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
 .assistant-section { background: white; }
 .chat-card { overflow: hidden; }
 .chat-header { background: var(--navy); color: white; padding: 22px; font-weight: 900; display: flex; align-items: center; gap: 12px; }
@@ -109,7 +143,18 @@ button { font-family: inherit; }
 .chat-bubble { border-radius: 18px; padding: 16px; line-height: 1.5; max-width: 86%; }
 .chat-bubble.user { background: #f1f5f9; }
 .chat-bubble.ai { background: rgba(176,134,70,.15); align-self: flex-end; }
+.chat-stream { display: flex; flex-direction: column; gap: 14px; max-height: 330px; overflow: auto; padding-right: 4px; }
 .chat-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; }
+.chat-input-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+.chat-input-row input {
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 15px;
+  outline: none;
+}
+.chat-input-row input:focus { border-color: rgba(176,134,70,.7); box-shadow: 0 0 0 3px rgba(176,134,70,.15); }
+.chat-error { margin-top: 8px; font-size: 13px; line-height: 1.5; color: #b91c1c; }
 
 .network-section { background: var(--navy); color: white; padding: 80px 0; }
 .network-section h2 { color: white; font-size: 42px; font-weight: 900; margin: 0 0 42px; max-width: 900px; }
@@ -152,7 +197,8 @@ button { font-family: inherit; }
   .container, .header-inner { padding-left: 20px; padding-right: 20px; }
   .header-inner { flex-wrap: wrap; }
   .hero-content { padding-top: 70px; padding-bottom: 70px; }
-  .support-grid, .service-grid, .stats-grid, .network-grid, .journey-grid, .two-col, .help-grid, .footer-grid { grid-template-columns: 1fr; }
+  .support-grid, .service-grid, .stats-grid, .network-grid, .journey-grid, .two-col, .help-grid, .footer-grid, .course-grid { grid-template-columns: 1fr; }
   .chat-actions { grid-template-columns: 1fr; }
+  .readiness-row { grid-template-columns: 1fr; }
   .cta-box { padding: 36px 20px; }
 }
