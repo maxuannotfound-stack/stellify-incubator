@@ -233,7 +233,13 @@ function App() {
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
+            disablePictureInPicture
+            poster="https://images.unsplash.com/photo-1545044846-351ba102b6d5?q=80&w=1600&auto=format&fit=crop"
+            onLoadedMetadata={(e) => {
+              // Some browsers block autoplay; try play and silently ignore errors.
+              e.currentTarget.play?.().catch?.(() => {});
+            }}
           >
             <source src="/media/stellify-hero.mp4" type="video/mp4" />
           </video>
