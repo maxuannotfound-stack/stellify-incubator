@@ -3,15 +3,20 @@ import { createRoot } from "react-dom/client";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  BarChart3,
   Bot,
   BookOpen,
   CheckCircle2,
   ChevronDown,
   ClipboardList,
+  Gavel,
+  HandCoins,
   LineChart,
+  Megaphone,
   MessageCircle,
-  Network,
+  Settings,
   ShieldCheck,
+  Shield,
   Users,
 } from "lucide-react";
 import "./styles.css";
@@ -593,13 +598,21 @@ function App() {
 
       <section id="network" className="network-section">
         <div className="container">
-          <p className="eyebrow light-text">Business Support Network</p>
-          <h2>More than a broker: a support platform for business growth</h2>
+          <p className="eyebrow light-text">Partner Network</p>
+          <h2>Meet Our Partner Network</h2>
           <div className="network-grid">
-            {["IT Support", "Accounting", "Business Automation", "Intellectual Property"].map((item) => (
-              <div key={item} className="network-card">
-                <Network />
-                <h3>{item}</h3>
+            {[
+              [BarChart3, "Accounting"],
+              [Settings, "Automation"],
+              [Shield, "IT Support"],
+              [Gavel, "Legal"],
+              [Users, "Intellectual Property"],
+              [Megaphone, "Marketing"],
+              [HandCoins, "Funding Specialists"],
+            ].map(([Icon, title]) => (
+              <div key={title} className="network-card">
+                <Icon />
+                <h3>{title}</h3>
                 <p>Connect with trusted professionals through Stellify’s referral network.</p>
               </div>
             ))}
