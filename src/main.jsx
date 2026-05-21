@@ -226,7 +226,18 @@ function App() {
       </header>
 
       <section id="home" className="hero">
-        <div className="hero-image" />
+        <div className="hero-image" aria-hidden="true">
+          <video
+            className="hero-video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          >
+            <source src="/media/stellify-hero.mp4" type="video/mp4" />
+          </video>
+        </div>
         <div className="container hero-content">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
