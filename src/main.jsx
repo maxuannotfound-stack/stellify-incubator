@@ -14,6 +14,7 @@ import {
   LineChart,
   Megaphone,
   MessageCircle,
+  Network,
   Settings,
   ShieldCheck,
   Shield,
